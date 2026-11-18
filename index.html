@@ -155,7 +155,7 @@ dialog select{width:100%;background:var(--bg);border:1px solid var(--bd);border-
 <label>진행상황</label><select id="fst"></select>
 <div id="tdd0"><label>마감 기한</label><input type="date" id="fdd"></div>
 <div id="tdx"><label>우선순위</label><select id="fpr"><option value="0">높음</option><option value="1">보통</option><option value="2">낮음</option></select><label>완료일 (완료 상태일 때)</label><input type="date" id="fdn"><label>분류 (쉼표로 구분)</label><input id="fct" placeholder="예: 마케팅팀, 개발팀"><label>상위 업무</label><select id="fpa"></select><label>메모</label><textarea id="fmo" style="min-height:70px"></textarea></div>
-<div class="act"><button id="fdel" style="margin-right:auto">삭제</button><button id="fcx">취소</button><button class="pri" id="fsv">저장</button></div></dialog>
+<div class="act"><button id="fdel" style="margin-right:auto">삭제</button><button id="fdone" style="background:#2e9e6b;border-color:#2e9e6b;color:#fff">✅ 완료</button><button id="fcx">취소</button><button class="pri" id="fsv">저장</button></div></dialog>
 <dialog id="fxd"><strong>고정 시간 일괄 넣기</strong>
 <div class="row" id="fxpr" style="margin-top:8px"><button data-pr="출근|08:00|09:00">출근 예시</button><button data-pr="퇴근|18:00|19:00">퇴근 예시</button></div>
 <label>제목</label><input id="fxt" value="출근">
@@ -171,6 +171,11 @@ dialog select{width:100%;background:var(--bg);border:1px solid var(--bd);border-
 <p class="mu" style="margin:8px 0 0">이 페이지의 https 주소가 구글 클라우드의 ‘승인된 JavaScript 원본’에 등록돼 있어야 해요. 폰·노트북 각각 한 번씩 입력하세요. 데이터는 내 드라이브의 앱 전용 숨김 폴더에 저장돼요.</p>
 <div class="act"><button id="sdc" style="margin-right:auto">연결 해제</button><button id="sdx">닫기</button><button class="pri" id="sgo">연결·동기화</button></div></dialog>
 <div id="toast"></div>
+<script>
+document.querySelectorAll('dialog').forEach(d=>{let down=false;
+ d.addEventListener('pointerdown',e=>{if(e.target!==d){down=false;return}const r=d.getBoundingClientRect();down=e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom});
+ d.addEventListener('click',e=>{if(e.target===d&&down)d.close();down=false})});
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -180,7 +185,18 @@ const $=s=>document.querySelector(s);
 let db,all=[],editing=null,pending=[],dl=null,lbf=null,rmId=null,collapsed=new Set();
 document.addEventListener('DOMContentLoaded',()=>{
   $('#cfn').onclick=()=>$('#cf').close();
-  $('#cfy').onclick=async()=>{try{await tx('readwrite',s=>s.delete(rmId));window.unlinkTk&&await window.unlinkTk(rmId);$('#cf').close();await load();toast('삭제했습니다')}catch(e){toast('삭제에 실패했습니다')}};
+  $('#cfy').onclick=async()=>{try{const e=all.find(x=>x.id===rmId),k=window.WM?window.WM.tk().find(x=>x.id===rmId||(e&&e.tid&&x.id===e.tid)):null;
+    await tx('readwrite',s=>s.delete(rmId));if(k)await window.delTkLink(k.id);UNDO.push({e,k:k?{...k}:null});$('#cf').close();await load();toast('삭제했습니다 · Ctrl+Z로 되돌릴 수 있어요')}catch(e){toast('삭제에 실패했습니다')}};
+});
+const UNDO=[];
+document.addEventListener('keydown',async ev=>{
+  if(!(ev.ctrlKey||ev.metaKey)||ev.shiftKey||ev.altKey)return;
+  if(!(ev.code==='KeyZ'||(ev.key||'').toLowerCase()==='z'))return;
+  const t=ev.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable))return;
+  if(document.querySelector('dialog[open]'))return;
+  ev.preventDefault();const u=UNDO.pop();if(!u)return toast('되돌릴 삭제 내역이 없어요');
+  try{if(u.e)await tx('readwrite',s=>s.put(u.e));if(u.k)await window.restoreTk(u.k);await load();toast('삭제한 기록을 되돌렸어요')}
+  catch(e){UNDO.push(u);toast('되돌리기에 실패했습니다')}
 });
 const DAYS=['일','월','화','수','목','금','토'];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -425,12 +441,14 @@ $('#cbox').onclick=async ev=>{const n=ev.target.closest('[data-cn]'),c=ev.target
  if(a){openT(null,+a.dataset.lv||0);$('#fdd').value=a.dataset.ca;return}
  if(o)return openT(TD.find(x=>x.id===o.dataset.to));
  if(d){csel=d.dataset.cd;rCal()}};
-const rTd=()=>{rDy();const tops=TD.filter(t=>t.lv===0).sort((a,b)=>(a.date||'9').localeCompare(b.date||'9')||a.updated-b.updated),L=subs();
- let h=`<div class="box"><h4>🗂️ 상위 업무 <span class="mu">${tops.length}</span></h4><div class="cds">${tops.map(topCard).join('')||'<span class="mu">상위 업무를 추가해 보세요.</span>'}</div></div><div class="box"><h4>📋 하위 업무 <span class="mu">${L.length}</span></h4>`;
- if(tv==='brd')h+=`<div class="brd">${ST.map((s,i)=>{if(hd&&i===4)return'';const c=L.filter(t=>si(t)===i);return`<div class="col"><span class="pl s${i}">${s[1]} ${s[0]}</span> <span class="mu">${c.length}</span>${c.map(t=>`<div class="cd q${pi(t)}" data-to="${t.id}"><b>${esc(t.text)}</b>${prv(t)}${pn(t)}${due(t)}${mm(t)}<div>${tags(t)}</div></div>`).join('')}<button data-na="${i}" style="width:100%;margin-top:8px;border:0;color:var(--mu)">+ New</button></div>`}).join('')}</div>`;
+const brd=(arr,lv,fn)=>`<div class="brd">${ST.map((s,i)=>{if(hd&&i===4)return'';const c=arr.filter(t=>si(t)===i);return`<div class="col"><span class="pl s${i}">${s[1]} ${s[0]}</span> <span class="mu">${c.length}</span>${c.map(fn).join('')}<button data-na="${i}" data-nl="${lv}" style="width:100%;margin-top:8px;border:0;color:var(--mu)">+ New</button></div>`}).join('')}</div>`;
+const topBrd=t=>{const ch=TD.filter(x=>x.parent===t.id);return`<div class="cd${t.date&&t.status!=='완료'&&t.date<today()?' q0':''}" data-to="${t.id}"><b>🗂️ ${esc(t.text)}</b>${ch.length?`<div>${ch.map(c=>`<span class="tg s${si(c)}">${esc(c.text)}</span>`).join('')}</div>`:'<div class="m">연결된 하위 업무 없음</div>'}<div class="m">${t.date?`⏰ 마감 ${fdl(t.date)} ${dd(t)}`:'마감 기한 없음'}</div></div>`};
+const rTd=()=>{rDy();const card=tv!=='brd',allTops=TD.filter(t=>t.lv===0),tops=allTops.filter(t=>card?t.status!=='완료':(!hd||t.status!=='완료')).sort((a,b)=>(a.date||'9').localeCompare(b.date||'9')||a.updated-b.updated),L0=subs(),L=card?L0.filter(t=>t.status!=='완료'):L0,hid=(allTops.length-tops.length)+(L0.length-L.length);
+ let h=`<div class="box"><h4>🗂️ 상위 업무 <span class="mu">${tops.length}</span></h4>${card?`<div class="cds">${tops.map(topCard).join('')||'<span class="mu">상위 업무를 추가해 보세요.</span>'}</div>`:brd(tops,0,topBrd)}</div><div class="box"><h4>📋 하위 업무 <span class="mu">${L.length}</span></h4>`;
+ if(!card)h+=brd(L,1,t=>`<div class="cd q${pi(t)}" data-to="${t.id}"><b>${esc(t.text)}</b>${prv(t)}${pn(t)}${due(t)}${mm(t)}<div>${tags(t)}</div></div>`);
  else if(!L.length)h+='<div class="mu">하위 업무가 없어요.</div>';
- else if(tv==='card')h+=`<div class="cds">${L.map(subCard).join('')}</div>`;
- $('#tbox').innerHTML=h+'</div>';rCal()};
+ else h+=`<div class="cds">${L.map(subCard).join('')}</div>`;
+ $('#tbox').innerHTML=h+'</div>'+(card&&hid?`<div class="mu" style="text-align:center">완료된 업무 ${hid}건은 숨겨져 있어요 · ▥ 보드 보기에서 볼 수 있어요</div>`:'');rCal()};
 
 const mkLog=(k,b='')=>({id:k.id,tid:k.id,date:k.date,title:k.task,body:b,diff:'',feel:'',retro:'',cat:k.cat,start:k.start,end:k.end,files:[],updated:Date.now()});
 const showTab=p=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));['p1','p2','p3','p4','p5'].forEach(q=>$('#'+q).hidden=q!==p);if(p==='p3')render();if(p==='p5')rCal()};
@@ -445,6 +463,8 @@ async function addTk(){
  try{await newTk(v.date,v.cat,v.task,v.start,v.end);await load();$('#kt').value='';$('#ks').value=v.end;$('#ke').value='';rTk();rSch();toast(AUTO.includes(v.cat)?'추가했습니다':'추가했습니다 (이 구분은 업무 기록에 자동으로 넣지 않아요)')}catch(x){toast(NOSAVE)}
 }
 window.syncTk=async r=>{const k=r.tid&&TK.find(e=>e.id===r.tid);if(!k||!r.title||(k.task===r.title&&k.date===r.date))return;k.task=r.title;k.date=r.date;await put('tracker',k);rTk();rSch()};
+window.delTkLink=async id=>{if(!TK.some(e=>e.id===id))return;await rm('tracker',id);TK=TK.filter(e=>e.id!==id);openK.delete(id);rTk();rSch()};
+window.restoreTk=async k=>{await put('tracker',k);TK=TK.filter(e=>e.id!==k.id);TK.push(k);rTk();rSch()};
 window.unlinkTk=async id=>{const k=TK.find(e=>e.id===id);if(!k)return;k.inLog=false;k.body='';await put('tracker',k);rTk()};
 window.doneAll=()=>TD.filter(t=>(t.lv===2?t.done:t.lv!==0&&t.status==='완료')&&t.doneAt).map(t=>({text:t.text,date:t.doneAt,top:(TD.find(x=>x.id===t.parent)||{}).text||''}));
 window.WM={tk:()=>TK,td:()=>TD,du,gb,pr:t=>PRN[pi(t)]};
@@ -473,7 +493,8 @@ function openT(t,lv,st){te=t||null;tlv=t?(t.lv===0?0:1):lv;$('#tdt').textContent
  $('#ftl').value=t?t.text:'';$('#fst').innerHTML=ST.map(s=>`<option>${s[0]}</option>`).join('');$('#fst').value=t?t.status:ST[st||0][0];
  $('#fdd').value=t?t.date||'':'';$('#fdn').value=t?t.doneAt||'':'';$('#fpr').value=t?pi(t):1;$('#fct').value=t?(t.tags||[]).join(', '):'';$('#fmo').value=t?t.memo||'':'';
  $('#fpa').innerHTML='<option value="">(없음)</option>'+TD.filter(x=>x.lv===0&&(!t||x.id!==t.id)).map(x=>`<option value="${x.id}">${esc(x.text)}</option>`).join('');$('#fpa').value=t?t.parent||'':'';
- $('#tdx').hidden=!tlv;$('#fdel').hidden=!t;tdlg.showModal()}
+ $('#tdx').hidden=!tlv;$('#fdel').hidden=!t;$('#fdone').hidden=!!t&&t.status==='완료';tdlg.showModal()}
+$('#fdone').onclick=()=>{$('#fst').value='완료';$('#fsv').click()};
 $('#fsv').onclick=async()=>{const text=$('#ftl').value.trim();if(!text)return toast('제목을 입력해 주세요');
  const t=te||{id:crypto.randomUUID(),lv:tlv};
  Object.assign(t,{text,status:$('#fst').value,updated:Date.now()},tlv?{pri:+$('#fpr').value,date:$('#fdd').value,tags:$('#fct').value.split(',').map(s=>s.trim()).filter(Boolean),parent:$('#fpa').value,memo:$('#fmo').value}:{date:$('#fdd').value});
@@ -487,7 +508,7 @@ $('#th').onclick=e=>{hd=!hd;e.target.classList.toggle('on',hd);rTd()};
 $('#tv').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;tv=b.dataset.v;document.querySelectorAll('#tv button').forEach(x=>x.classList.toggle('on',x===b));rTd()};
 $('#tbox').onclick=async ev=>{const c=ev.target.closest('[data-cy]'),a=ev.target.closest('[data-na]'),o=ev.target.closest('[data-to]');
  if(c){const t=TD.find(x=>x.id===c.dataset.cy);t.status=ST[(si(t)+1)%5][0];t.updated=Date.now();if(t.status==='완료')t.doneAt=t.doneAt||today();else delete t.doneAt;try{await put('todos',t)}catch(e){toast(NOSAVE)}return rTd()}
- if(a)return openT(null,1,+a.dataset.na);
+ if(a)return openT(null,a.dataset.nl==='0'?0:1,+a.dataset.na);
  if(o)openT(TD.find(x=>x.id===o.dataset.to))};
 const kset=d=>{$('#kd').value=d;rTk()};
 $('#kdp').onclick=()=>kset(ad($('#kd').value||today(),-1));$('#kdn').onclick=()=>kset(ad($('#kd').value||today(),1));$('#kdt').onclick=()=>kset(today());$('#kd').onchange=rTk;
