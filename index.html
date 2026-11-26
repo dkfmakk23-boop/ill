@@ -89,12 +89,16 @@ dialog select{width:100%;background:var(--bg);border:1px solid var(--bd);border-
 .rvd{padding:5px 2px;border-bottom:1px dashed var(--bd);font-size:13px}.rvd:last-child{border-bottom:0}.rvd b{font-weight:600;margin-right:6px}
 .rvh{display:flex;gap:10px;align-items:baseline;padding:8px 4px;border-bottom:1px solid var(--bd);cursor:pointer}.rvh b{white-space:nowrap;font-weight:600}.rvh span{flex:1;color:var(--mu);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rvh.on{background:var(--ac2);border-radius:8px}
 dialog a{color:var(--ac)}
+#mq,#mxs,#mtq{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+.mcbox{margin-top:12px;border-top:1px solid var(--bd);padding-top:10px}
+.mc{display:flex;gap:8px;align-items:flex-start;padding:7px 4px;border-bottom:1px solid var(--bd);cursor:pointer;color:var(--tx)!important;font-size:14px!important;margin:0!important}.mc input{margin-top:4px;flex:none;width:auto!important}.mc b{font-weight:600}.mc2{display:block;font-size:12px}
+.mrefs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.mrefs .chip{padding:2px 10px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px"><h1 style="margin:0">🗓️ 업무 관리</h1><div class="row"><button id="sy">☁️ 드라이브</button><button id="xo">내보내기</button><button id="exp" title="타임트래커·업무 기록·업무 목록·첨부파일 전체를 JSON으로 저장">백업</button><button id="imp">복원</button><input type="file" id="impf" accept=".json" hidden></div></div>
-<div class="tabs" id="tabs"><button data-p="p1" class="on">① 타임트래커</button><button data-p="p2">② Time Blocking</button><button data-p="p3">③ 업무 기록</button><button data-p="p4">④ 업무 목록</button><button data-p="p5">⑤ 캘린더</button><button data-p="p6">⑥ 주간 회고</button></div>
+<div class="tabs" id="tabs"><button data-p="p1" class="on">① 타임트래커</button><button data-p="p2">② Time Blocking</button><button data-p="p3">③ 업무 기록</button><button data-p="p4">④ 업무 목록</button><button data-p="p5">⑤ 캘린더</button><button data-p="p6">⑥ 주간 회고</button><button data-p="p7">⑦ 소재함</button></div>
 <section id="p1">
 <div class="bar"><div class="row"><input type="date" id="kd"><select id="kc"></select><input id="kt" placeholder="업무 (예: 유사 사례 서치)" style="flex:1 1 180px"><input type="time" id="ks"><input type="time" id="ke"><button class="pri" id="ka">추가</button></div></div>
 <div class="nv"><button id="kdp">◀</button><b id="kdl"></b><button id="kdn">▶</button><button id="kdt">오늘</button></div>
@@ -139,6 +143,16 @@ dialog a{color:var(--ac)}
 <div class="bar"><input id="rvq" type="search" placeholder="🔍 회고 검색 (예: 협업, 게시판)" style="flex:1 1 100%"><div class="row"><button id="rvfold">모두 접기</button><button id="rvunfold">모두 펼치기</button></div></div>
 <div id="rvcnt" class="mu" style="margin:4px 2px 8px"></div>
 <div id="rvlist"></div>
+</section>
+<section id="p7" hidden>
+<div class="box"><h4>🔍 업무 이름으로 소재 만들기</h4>
+<p class="mu" style="margin:0 0 8px">업무 이름을 적으면 업무 기록에서 관련 기록을 찾아 보여 줘요. 맞는 기록만 직접 확인해 고르면, 그 기록들만으로 소재를 정리해요.</p>
+<input id="mq" placeholder="예: 공간 대관 시트 제작" autocomplete="off">
+<textarea id="mf" placeholder="🎯 이런 점을 중점적으로 정리해 줘 (선택)" style="margin-top:8px;min-height:56px"></textarea>
+<div class="row" style="margin-top:8px"><select id="mtm" style="flex:1 1 200px;min-width:0;max-width:100%" title="AI 모델"></select><button id="mtset">⚙️ AI 설정</button><button class="pri" id="mfind">🔍 관련 기록 찾기</button></div>
+<div id="mcand"></div></div>
+<div class="bar"><input id="mtq" type="search" placeholder="🔍 소재 검색 (예: 협업, 대관)"><div class="row" style="align-items:center"><button id="mnew">✏️ 직접 작성</button><span class="mu" id="mcnt"></span></div></div>
+<div id="mlist"></div>
 </section>
 </div>
 
@@ -192,9 +206,16 @@ dialog a{color:var(--ac)}
 <p class="mu" style="margin:6px 0 0">무료 키로는 Flash 계열을 쓸 수 있어요. 3.1 Pro는 AI Studio에서 결제를 연결한 키만 쓸 수 있어요. ‘모델 목록 새로고침’을 누르면 지금 쓸 수 있는 최신 모델을 불러와요.</p>
 <div class="act"><button id="ail" style="margin-right:auto">🔄 모델 목록 새로고침</button><button id="aix">닫기</button><button class="pri" id="aio">저장</button></div></dialog>
 <dialog id="rve"><strong id="rvet">회고 수정</strong>
+<label>🏷️ 제목</label><div class="row"><input id="rvetl" placeholder="예: 게시판 배치안 · 대관 시트 제작" style="flex:1 1 200px"><button id="rvetg">✨ AI로 제목 달기</button></div>
 <label>🎯 중점 (선택)</label><textarea id="rvef" style="min-height:56px"></textarea>
 <label>회고</label><textarea id="rvex" style="min-height:52vh"></textarea>
 <div class="act"><button id="rvec">취소</button><button class="pri" id="rves">저장</button></div></dialog>
+<dialog id="mpk"><strong id="mpkt">📦 소재로 넘기기</strong><p class="mu" style="margin:6px 0">소재함에 넣을 항목을 고르세요. 하나씩 따로 저장돼요.</p><div id="mpkl"></div>
+<div class="act"><button id="mpkx">취소</button><button class="pri" id="mpko">소재함에 넣기</button></div></dialog>
+<dialog id="mde"><strong id="mdet">소재</strong>
+<label>소재 제목</label><input id="mdtl" placeholder="예: 공간 대관 시트 제작">
+<label>내용</label><textarea id="mdtx" style="min-height:50vh"></textarea>
+<div class="act"><button id="mdec">취소</button><button class="pri" id="mdes">저장</button></div></dialog>
 <div id="toast"></div>
 <script>
 document.querySelectorAll('dialog').forEach(d=>{let down=false;
@@ -220,7 +241,7 @@ document.addEventListener('keydown',async ev=>{
   const t=ev.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable))return;
   if(document.querySelector('dialog[open]'))return;
   ev.preventDefault();const u=UNDO.pop();if(!u)return toast('되돌릴 삭제 내역이 없어요');
-  try{if(u.r){await window.rvRestore(u.r);return toast('삭제한 회고를 되돌렸어요')}if(u.e)await tx('readwrite',s=>s.put(u.e));if(u.k)await window.restoreTk(u.k);await load();toast('삭제한 기록을 되돌렸어요')}
+  try{if(u.m){await window.mRestore(u.m);return toast('삭제한 소재를 되돌렸어요')}if(u.r){await window.rvRestore(u.r);return toast('삭제한 회고를 되돌렸어요')}if(u.e)await tx('readwrite',s=>s.put(u.e));if(u.k)await window.restoreTk(u.k);await load();toast('삭제한 기록을 되돌렸어요')}
   catch(e){UNDO.push(u);toast('되돌리기에 실패했습니다')}
 });
 const DAYS=['일','월','화','수','목','금','토'];
@@ -234,7 +255,7 @@ let tt;const toast=(m,l)=>{const t=$('#toast');t.textContent=m;t.classList.add('
 const b64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
 const toBlob=u=>{const[h,d]=u.split(',');const t=h.match(/:(.*?);/)[1];const a=atob(d),n=new Uint8Array(a.length);for(let i=0;i<a.length;i++)n[i]=a.charCodeAt(i);return new Blob([n],{type:t})};
 
-const openDB=()=>new Promise((res,rej)=>{const r=indexedDB.open('worklog',3);r.onupgradeneeded=()=>{for(const n of['entries','tracker','todos','retros'])if(!r.result.objectStoreNames.contains(n))r.result.createObjectStore(n,{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const openDB=()=>new Promise((res,rej)=>{const r=indexedDB.open('worklog',4);r.onupgradeneeded=()=>{for(const n of['entries','tracker','todos','retros','materials'])if(!r.result.objectStoreNames.contains(n))r.result.createObjectStore(n,{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const tx=(mode,f)=>new Promise((res,rej)=>{const t=db.transaction('entries',mode),o=f(t.objectStore('entries'));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)});
 const load=async()=>{all=(await tx('readonly',s=>s.getAll()))||[];fill();render()};
 
@@ -481,7 +502,8 @@ const rTd=()=>{rDy();const card=tv!=='brd',allTops=TD.filter(t=>t.lv===0),tops=a
  $('#tbox').innerHTML=h+'</div>'+(card&&hid?`<div class="mu" style="text-align:center">완료된 업무 ${hid}건은 숨겨져 있어요 · ▥ 보드 보기에서 볼 수 있어요</div>`:'');rCal()};
 
 const mkLog=(k,b='')=>({id:k.id,tid:k.id,date:k.date,title:k.task,body:b,diff:'',feel:'',retro:'',cat:k.cat,start:k.start,end:k.end,files:[],updated:Date.now()});
-const showTab=p=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));['p1','p2','p3','p4','p5','p6'].forEach(q=>$('#'+q).hidden=q!==p);if(p==='p3')render();if(p==='p5')rCal();if(p==='p6'&&window.rRv)window.rRv()};
+const showTab=p=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));['p1','p2','p3','p4','p5','p6','p7'].forEach(q=>$('#'+q).hidden=q!==p);if(p==='p3')render();if(p==='p5')rCal();if(p==='p6'&&window.rRv)window.rRv();if(p==='p7'&&window.rMt)window.rMt()};
+window.goLog=id=>goLog(id);
 const goLog=async id=>{const g=all.find(e=>e.id===id);if(!g)return;$('#q').value='';$('#fy').value=$('#fm').value=$('#fd').value='';collapsed.delete(g.date);fill();showTab('p3');
  const a=document.getElementById('e-'+id);if(a){a.scrollIntoView({block:'center'});a.classList.add('fl');setTimeout(()=>a.classList.remove('fl'),1800)}};
 const newTk=async(date,cat,task,start,end)=>{const e={id:crypto.randomUUID(),date,cat,task,start,end,inLog:AUTO.includes(cat)};await put('tracker',e);if(e.inLog)await tx('readwrite',s=>s.put(mkLog(e)));TK.push(e);return e};
@@ -581,7 +603,7 @@ document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dat
 $('#exp').onclick=async()=>{
  if(!all.length&&!TK.length&&!TD.length)return toast('백업할 기록이 없습니다');
  const out=[];for(const e of all)out.push({...e,files:await Promise.all(e.files.map(async f=>({name:f.name,type:f.type,size:f.size,data:await b64(f.blob)})))});
- save(`업무관리_백업_${today()}.json`,JSON.stringify({v:2,entries:out,tracker:TK,todos:TD,retros:await st('retros','readonly',s=>s.getAll())||[]}));
+ save(`업무관리_백업_${today()}.json`,JSON.stringify({v:2,entries:out,tracker:TK,todos:TD,retros:await st('retros','readonly',s=>s.getAll())||[],materials:await st('materials','readonly',s=>s.getAll())||[]}));
 };
 $('#impf').onchange=async ev=>{
  try{
@@ -590,6 +612,7 @@ $('#impf').onchange=async ev=>{
   for(const e of j.tracker||[]){await put('tracker',e);n++}
   for(const e of j.todos||[]){await put('todos',e);n++}
   for(const e of j.retros||[]){await put('retros',e);n++}
+  for(const e of j.materials||[]){await put('materials',e);n++}
   await load();await window.loadX();toast(`${n}건을 복원했습니다`);
  }catch(e){toast('백업 파일을 읽을 수 없습니다')}
  ev.target.value='';
@@ -611,26 +634,70 @@ rTk();rSch();rTd();
 })();
 </script>
 <script>
-/* ===== ⑥ 주간 회고 (Gemini) ===== */
+/* ===== ⑥ 주간 회고 · ⑦ 소재함 (Gemini) ===== */
 (()=>{
 const ls=k=>{try{return localStorage.getItem('wm_'+k)||''}catch(e){return''}},lw=(k,v)=>{try{localStorage.setItem('wm_'+k,v)}catch(e){}};
 const DEF=[['gemini-3.6-flash','Gemini 3.6 Flash · 무료 (추천)'],['gemini-3-flash-preview','Gemini 3 Flash · 무료'],['gemini-3.1-flash-lite','Gemini 3.1 Flash-Lite · 무료·빠름'],['gemini-3.1-pro-preview','Gemini 3.1 Pro · 유료 결제 필요']];
 const FREE=new Set(['gemini-3.6-flash','gemini-3-flash-preview','gemini-3.1-flash-lite']);
 const models=()=>{try{const m=JSON.parse(ls('gmodels'));if(Array.isArray(m)&&m.length)return m}catch(e){}return DEF};
 const cur=()=>{const ms=models(),c=ls('gmodel');return ms.some(m=>m[0]===c)?c:ms[0][0]};
-const fillM=()=>{const ms=models(),c=cur(),h=ms.map(m=>`<option value="${esc(m[0])}">${esc(m[1])}</option>`).join('');['#rvm','#aim'].forEach(s=>{$(s).innerHTML=h;$(s).value=c})};
+const fillM=()=>{const ms=models(),c=cur(),h=ms.map(m=>`<option value="${esc(m[0])}">${esc(m[1])}</option>`).join('');['#rvm','#aim','#mtm'].forEach(s=>{$(s).innerHTML=h;$(s).value=c})};
 const pd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
 const add=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
 const monOf=s=>{const d=pd(s);d.setDate(d.getDate()-(d.getDay()+6)%7);return ymd(d)};
 const md=s=>{const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`};
 const dw=s=>DAYS[pd(s).getDay()];
 const wl=w=>`${pd(w).getFullYear()}년 ${md(w)} (월) ~ ${md(add(w,6))} (일)`;
-const dt=t=>new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+const dt=t=>new Date(t).toLocaleString('ko-KR',{year:'2-digit',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
 const mins=e=>{const f=t=>{const[h,m]=(t||'0:0').split(':').map(Number);return h*60+(m||0)};let d=f(e.end)-f(e.start);if(d<=0)d+=1440;return d};
 const hm=n=>`${Math.floor(n/60)}시간${n%60?' '+n%60+'분':''}`;
-let RV=[],w0=monOf(today()),busy=false,rq='',fold=new Set(),eid=null,ewk=null;
+const clean=s=>s.replace(/\*\*/g,'').replace(/^#{1,6}\s*/gm,'').trim();
+const st2=(n,m,f)=>new Promise((res,rej)=>{const t=db.transaction(n,m),o=f(t.objectStore(n));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)});
+const flash=(pre,id)=>{const a=document.getElementById(pre+id);if(a){a.scrollIntoView({block:'center',behavior:'smooth'});a.classList.add('fl');setTimeout(()=>a.classList.remove('fl'),1800)}};
+const copy=async t=>{try{await navigator.clipboard.writeText(t);toast('복사했어요')}catch(e){toast('복사에 실패했어요')}};
+
+/* ---------- Gemini 공통 ---------- */
+const label=m=>{const id=m.name.replace(/^models\//,''),n=m.displayName||id;return[id,FREE.has(id)?n+' · 무료':/pro/i.test(id)?n+' · 유료 결제 필요할 수 있음':n]};
+const fetchModels=async k=>{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000',{headers:{'x-goog-api-key':k}}),j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(/API key|API_KEY/i.test((j.error&&j.error.message)||'')?'API 키를 확인해 주세요':((j.error&&j.error.message)||'오류 '+r.status));
+  const ms=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/^models\/gemini-/.test(m.name)&&!/image|tts|audio|embed|robotics|live|computer|customtools|exp/i.test(m.name)).map(label);
+  if(!ms.length)throw new Error('쓸 수 있는 모델이 없어요');
+  const rank=id=>FREE.has(id)?0:/pro/i.test(id)?2:1;ms.sort((a,b)=>rank(a[0])-rank(b[0])||b[0].localeCompare(a[0],undefined,{numeric:true}));
+  lw('gmodels',JSON.stringify(ms));fillM();return ms.length};
+const why=(st,msg,m)=>{msg=msg||'';
+  if(/API key|API_KEY|PERMISSION_DENIED/i.test(msg)||st===403)return'API 키가 올바르지 않아요. ⚙️ AI 설정에서 키를 다시 확인해 주세요';
+  if(st===429)return/pro/i.test(m)?'이 모델은 무료 키로 쓸 수 없거나 오늘 무료 한도를 넘었어요. Flash 모델로 바꿔 보세요':'무료 사용 한도를 넘었어요. 잠시 뒤 다시 하거나 다른 모델을 골라 보세요';
+  if(st===404)return'이 모델은 이제 쓸 수 없어요. 모델 목록을 새로 불러왔으니 모델 칸에서 다시 골라 주세요';
+  if(st===503||st===500)return'구글 서버가 바빠요. 잠시 뒤 다시 눌러 주세요';
+  return msg||('오류 '+st)};
+const gem=async(sys,user,schema)=>{const key=ls('gkey');if(!key){$('#rvset').click();throw new Error('먼저 Gemini API 키를 넣어 주세요')}
+  const m=cur(),ac=new AbortController(),to=setTimeout(()=>ac.abort(),180000);
+  try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json','x-goog-api-key':key},
+      body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:user}]}],...(schema?{generationConfig:{responseMimeType:'application/json',responseSchema:schema}}:{})})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){if(r.status===404){try{await fetchModels(key)}catch(e){}}throw new Error(why(r.status,j.error&&j.error.message,m))}
+    const c=(j.candidates||[])[0],out=((c&&c.content&&c.content.parts)||[]).filter(p=>p.text&&!p.thought).map(p=>p.text).join('').trim();
+    if(!out)throw new Error(c&&c.finishReason==='SAFETY'?'AI가 답변을 거절했어요. 내용을 조금 바꿔 다시 해 주세요':'AI가 빈 답변을 보냈어요. 다시 눌러 주세요');
+    return{out,m}}
+  catch(e){if(e.name==='AbortError')throw new Error('시간이 너무 오래 걸려서 멈췄어요. 다시 눌러 주세요');throw e}
+  finally{clearTimeout(to)}};
+const busyBtn=async(b,txt,fn)=>{if(b.disabled)return;const o=b.textContent;b.disabled=true;b.textContent=txt;try{await fn()}catch(e){toast(e.message,true)}finally{b.disabled=false;b.textContent=o}};
+const RULES=`- 기록에 있는 사실만 써. 기록에 없는 숫자, 성과, 사람들 반응, 의미는 덧붙이지 마.
+- 꾸미거나 부풀리지 마. '성공적으로', '크게 기여', '탁월한', '적극적으로', '주도적으로 이끌어', '성장의 발판' 같은 포장하는 말은 쓰지 마.
+- 영어나 어려운 전문 용어를 쓰지 말고 쉬운 우리말로 써. (예: 트러블슈팅 → 문제 해결, 커뮤니케이션 → 소통, 니즈 → 필요, 인사이트 → 알게 된 점, 프로세스 → 진행 방식, 피드백 → 의견)
+- 사용자가 기록에 쓴 표현을 최대한 그대로 살려.
+- 모든 항목은 짧은 개조식으로 쓰고, 끝은 '~함', '~했음', '~였음'처럼 짧게 맺어.
+- 기록에 없어서 채울 수 없는 칸은 지어내지 말고 '기록 없음'이라고 써.
+- 마크다운 기호(#, **, 표)는 쓰지 말고 정해진 형식 그대로 써.`;
+const entryText=(x,full)=>{const L=[`■ ${x.date} (${dw(x.date)}) ${x.title||'(제목 없음)'}${x.cat?` [${x.cat}${x.start?` ${x.start}~${x.end}`:''}]`:''}`];
+  const cut=s=>full?s:s.length>160?s.slice(0,160)+'…':s;
+  if((x.body||'').trim())L.push('내용: '+cut(x.body.trim()));if((x.diff||'').trim())L.push('어려웠던 점: '+cut(x.diff.trim()));if(FE(x).trim())L.push('느낀 점: '+cut(FE(x).trim()));if((x.retro||'').trim())L.push('회고: '+cut(x.retro.trim()));
+  if(full&&x.files&&x.files.length)L.push('첨부: '+x.files.map(a=>a.name).join(', '));return L.join(full?'\n':' | ')};
+
+/* ---------- ⑥ 주간 회고 ---------- */
+let RV=[],w0=monOf(today()),rq='',fold=new Set(),eid=null,ewk=null;
 const wkOf=r=>r.week||r.id;
-const rs=(m,f)=>new Promise((res,rej)=>{const t=db.transaction('retros',m),o=f(t.objectStore('retros'));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)});
+const rs=(m,f)=>st2('retros',m,f);
 const loadRv=async()=>{try{RV=((await rs('readonly',s=>s.getAll()))||[]).filter(r=>(r.text||'').trim())}catch(e){RV=[]}};
 const wkData=w=>{const e=add(w,6),inR=d=>d>=w&&d<=e;
   const es=all.filter(x=>inR(x.date)).sort((a,b)=>a.date.localeCompare(b.date)||(a.start||'').localeCompare(b.start||'')||a.updated-b.updated);
@@ -643,70 +710,62 @@ function rTop(){const{es,dn,tm}=wkData(w0),n=RV.filter(r=>wkOf(r)===w0).length;
   const days=[];for(let i=0;i<7;i++){const d=add(w0,i),a=es.filter(x=>x.date===d),b=dn.filter(x=>x.date===d);if(a.length||b.length)days.push(`<div class="rvd"><b>${md(d)} (${dw(d)})</b>${a.map(x=>esc(x.title||'(제목 없음)')).join(', ')}${b.length?`${a.length?' · ':''}<span class="mu">✅ ${b.map(x=>esc(x.text)).join(', ')}</span>`:''}</div>`)}
   const tl=Object.entries(tm).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`${esc(c)} ${hm(n)}`).join(' · ');
   $('#rvl').innerHTML=(days.join('')||'<div class="mu">이 주에는 업무 기록이 없어요.</div>')+(tl?`<div class="mu" style="margin-top:6px">⏱ ${tl}</div>`:'')}
-function rList(){const q=rq.toLowerCase(),L=RV.filter(r=>!q||((r.text||'')+' '+(r.focus||'')).toLowerCase().includes(q)),G={};
+function rList(){const q=rq.toLowerCase(),L=RV.filter(r=>!q||((r.title||'')+' '+(r.text||'')+' '+(r.focus||'')).toLowerCase().includes(q)),G={};
   L.forEach(r=>(G[wkOf(r)]=G[wkOf(r)]||[]).push(r));const ks=Object.keys(G).sort().reverse();
   $('#rvcnt').textContent=RV.length?`${ks.length}주 · 회고 ${L.length}개${q?` (전체 ${RV.length}개)`:''}`:'';
   $('#rvlist').innerHTML=ks.map(k=>{const c=fold.has(k),a=G[k].sort((x,y)=>(y.created||y.updated)-(x.created||x.updated));
-    return`<article id="rw-${k}"><div class="top"><h3 data-rt="${k}"><span class="car">${c?'▸':'▾'}</span>${wl(k)} <span class="mu">${a.length}개</span></h3><button data-rg="${k}" style="white-space:nowrap">📊 이 주로</button></div>`+(c?'':a.map(r=>`<div class="en" id="rv-${r.id}"><div class="top"><b>🔁 ${dt(r.created||r.updated)}${r.model?` <span class="mu">· ${esc(r.model)}</span>`:''}</b><span><button data-rc="${r.id}">복사</button> <button data-re="${r.id}">수정</button> <button data-rx="${r.id}">삭제</button></span></div>${(r.focus||'').trim()?`<div class="mu">🎯 ${hl(r.focus,rq)}</div>`:''}<p>${hl(r.text,rq)}</p></div>`).join(''))+'</article>'}).join('')
+    return`<article id="rw-${k}"><div class="top"><h3 data-rt="${k}"><span class="car">${c?'▸':'▾'}</span>${wl(k)} <span class="mu">${a.length}개</span></h3><button data-rg="${k}" style="white-space:nowrap">📊 이 주로</button></div>`+(c?'':a.map(r=>`<div class="en" id="rv-${r.id}"><div class="top"><b>🏷️ ${r.title?hl(r.title,rq):'<span class="mu">(제목 없음 · 수정에서 달 수 있어요)</span>'}</b><span style="white-space:nowrap"><button data-tomt="${r.id}">📦 소재로</button> <button data-rc="${r.id}">복사</button> <button data-re="${r.id}">수정</button> <button data-rx="${r.id}">삭제</button></span></div><div class="mu">🔁 ${dt(r.created||r.updated)}${r.model?` · ${esc(r.model)}`:''}</div>${(r.focus||'').trim()?`<div class="mu">🎯 ${hl(r.focus,rq)}</div>`:''}<p>${hl(r.text,rq)}</p></div>`).join(''))+'</article>'}).join('')
     ||`<div class="empty">${RV.length?'검색어와 맞는 회고가 없어요.':'아직 회고가 없어요.<br>위에서 ‘✨ AI로 회고 작성’을 눌러 보세요.'}</div>`}
 const rRv=()=>{rTop();rList()};window.rRv=rRv;
 const putRv=async r=>{await rs('readwrite',s=>s.put(r));RV=RV.filter(x=>x.id!==r.id);RV.push(r)};
-const flash=id=>{const a=document.getElementById('rv-'+id);if(a){a.scrollIntoView({block:'center',behavior:'smooth'});a.classList.add('fl');setTimeout(()=>a.classList.remove('fl'),1800)}};
 const go=w=>{w0=w;rTop()};
 $('#rvp').onclick=()=>go(add(w0,-7));$('#rvn').onclick=()=>go(add(w0,7));$('#rvt').onclick=()=>go(monOf(today()));
 $('#rvf').value=ls('rvfocus');$('#rvf').oninput=e=>lw('rvfocus',e.target.value);
 $('#rvq').oninput=e=>{rq=e.target.value.trim();rList()};
 $('#rvfold').onclick=()=>{fold=new Set(RV.map(wkOf));rList()};$('#rvunfold').onclick=()=>{fold.clear();rList()};
-$('#rvlist').onclick=async ev=>{const t=ev.target.closest('[data-rt],[data-rg],[data-rc],[data-re],[data-rx]');if(!t)return;const d=t.dataset;
+$('#rvlist').onclick=async ev=>{const t=ev.target.closest('[data-rt],[data-rg],[data-rc],[data-re],[data-rx],[data-tomt]');if(!t)return;const d=t.dataset;
   if(d.rt){fold.has(d.rt)?fold.delete(d.rt):fold.add(d.rt);return rList()}
   if(d.rg){go(d.rg);return $('#p6').scrollIntoView({behavior:'smooth'})}
-  const r=RV.find(x=>x.id===(d.rc||d.re||d.rx));if(!r)return;
-  if(d.rc){try{await navigator.clipboard.writeText(r.text);toast('복사했어요')}catch(e){toast('복사에 실패했어요')}return}
+  const r=RV.find(x=>x.id===(d.rc||d.re||d.rx||d.tomt));if(!r)return;
+  if(d.rc)return copy((r.title?'🏷️ '+r.title+'\n\n':'')+r.text);
   if(d.re)return openE(r);
+  if(d.tomt)return openPick(r);
   if(d.rx){try{await rs('readwrite',s=>s.delete(r.id));RV=RV.filter(x=>x.id!==r.id);UNDO.push({r});rRv();toast('삭제했어요 · Ctrl+Z로 되돌릴 수 있어요')}catch(e){toast('삭제에 실패했어요')}}};
-window.rvRestore=async r=>{await putRv(r);fold.delete(wkOf(r));if(!$('#p6').hidden){rRv();flash(r.id)}};
-/* 수정·직접 쓰기 창 */
+window.rvRestore=async r=>{await putRv(r);fold.delete(wkOf(r));if(!$('#p6').hidden){rRv();flash('rv-',r.id)}};
 const rve=$('#rve');
-const openE=(r,w)=>{eid=r?r.id:null;ewk=r?wkOf(r):w;$('#rvet').textContent=(r?'회고 수정 · ':'직접 쓰기 · ')+wl(ewk);$('#rvef').value=r?r.focus||'':'';$('#rvex').value=r?r.text||'':'';rve.showModal()};
+const openE=(r,w)=>{eid=r?r.id:null;ewk=r?wkOf(r):w;$('#rvet').textContent=(r?'회고 수정 · ':'직접 쓰기 · ')+wl(ewk);$('#rvetl').value=r?r.title||'':'';$('#rvef').value=r?r.focus||'':'';$('#rvex').value=r?r.text||'':'';rve.showModal()};
 $('#rvnew').onclick=()=>openE(null,w0);
 $('#rvec').onclick=()=>rve.close();
 $('#rves').onclick=async()=>{const text=$('#rvex').value;if(!text.trim())return toast('회고 내용을 적어 주세요');
-  const o=eid&&RV.find(x=>x.id===eid),r={...(o||{id:crypto.randomUUID(),week:ewk,created:Date.now()}),focus:$('#rvef').value,text,updated:Date.now()};
-  try{await putRv(r);rve.close();fold.delete(wkOf(r));rRv();flash(r.id);toast('저장했어요')}catch(e){toast('저장에 실패했어요')}};
-$('#rvm').onchange=e=>{lw('gmodel',e.target.value);fillM()};
-/* 설정 창 */
+  const o=eid&&RV.find(x=>x.id===eid),r={...(o||{id:crypto.randomUUID(),week:ewk,created:Date.now()}),title:$('#rvetl').value.trim(),focus:$('#rvef').value,text,updated:Date.now()};
+  try{await putRv(r);rve.close();fold.delete(wkOf(r));rRv();flash('rv-',r.id);toast('저장했어요')}catch(e){toast('저장에 실패했어요')}};
+const SYS_T=`주간 회고나 업무 기록을 보고, 그 주에 한 업무를 키워드 3~5개로 묶어 제목 한 줄을 만들어.
+- 키워드는 실제로 한 업무 이름으로 짧게 (예: 청년정책 게시판 배치안 · 대관 예약 시트 제작 · 홍보물 검수)
+- ' · '로 구분해. 글에 있는 업무만 쓰고, 꾸미는 말이나 영어는 쓰지 마.
+- 제목 한 줄만 출력해.`;
+$('#rvetg').onclick=e=>busyBtn(e.target,'만드는 중…',async()=>{const t=$('#rvex').value.trim();if(!t)throw new Error('회고 내용이 있어야 제목을 달 수 있어요');
+  const{out}=await gem(SYS_T,t);$('#rvetl').value=clean(out).split('\n')[0].replace(/^🏷️?\s*(제목\s*[:：])?\s*/,'').trim()});
+$('#rvm').onchange=$('#mtm').onchange=e=>{lw('gmodel',e.target.value);fillM()};
 const aid=$('#aid');
-$('#rvset').onclick=()=>{$('#aik').value=ls('gkey');fillM();aid.showModal()};
+$('#rvset').onclick=$('#mtset').onclick=()=>{$('#aik').value=ls('gkey');fillM();aid.showModal()};
 $('#aix').onclick=()=>aid.close();
-const label=m=>{const id=m.name.replace(/^models\//,''),n=m.displayName||id;return[id,FREE.has(id)?n+' · 무료':/pro/i.test(id)?n+' · 유료 결제 필요할 수 있음':n]};
-const fetchModels=async k=>{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000',{headers:{'x-goog-api-key':k}}),j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(/API key|API_KEY/i.test((j.error&&j.error.message)||'')?'API 키를 확인해 주세요':((j.error&&j.error.message)||'오류 '+r.status));
-  const ms=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/^models\/gemini-/.test(m.name)&&!/image|tts|audio|embed|robotics|live|computer|customtools|exp/i.test(m.name)).map(label);
-  if(!ms.length)throw new Error('쓸 수 있는 모델이 없어요');
-  const rank=id=>FREE.has(id)?0:/pro/i.test(id)?2:1;ms.sort((a,b)=>rank(a[0])-rank(b[0])||b[0].localeCompare(a[0],undefined,{numeric:true}));
-  lw('gmodels',JSON.stringify(ms));fillM();return ms.length};
 $('#aio').onclick=async()=>{const k=$('#aik').value.trim();lw('gkey',k);lw('gmodel',$('#aim').value);aid.close();
   if(!k)return toast('키를 지웠어요');toast('저장했어요');try{await fetchModels(k)}catch(e){}};
 $('#ail').onclick=async()=>{const k=$('#aik').value.trim()||ls('gkey');if(!k)return toast('먼저 API 키를 넣어 주세요');
   const b=$('#ail');b.disabled=true;b.textContent='불러오는 중…';
   try{const n=await fetchModels(k);toast(`모델 ${n}개를 불러왔어요`)}catch(e){toast('불러오기 실패: '+e.message,true)}
   finally{b.disabled=false;b.textContent='🔄 모델 목록 새로고침'}};
-/* AI 작성 */
 const SYS=`너는 사용자가 나중에 자기소개서 소재를 찾아볼 수 있도록, 일주일 업무 기록에서 소재가 될 만한 것을 골라 정리해 주는 역할이야. 글을 다듬어 쓰는 게 아니라 재료만 담백하게 정돈해. 문장을 자소서처럼 가공하는 건 사용자가 나중에 직접 할 거야.
 
 규칙
-- 기록에 있는 사실만 써. 기록에 없는 숫자, 성과, 사람들 반응, 의미는 덧붙이지 마.
-- 꾸미거나 부풀리지 마. '성공적으로', '크게 기여', '탁월한', '적극적으로', '주도적으로 이끌어', '성장의 발판' 같은 포장하는 말은 쓰지 마.
-- 영어나 어려운 전문 용어를 쓰지 말고 쉬운 우리말로 써. (예: 트러블슈팅 → 문제 해결, 커뮤니케이션 → 소통, 니즈 → 필요, 인사이트 → 알게 된 점, 프로세스 → 진행 방식, 피드백 → 의견)
-- 사용자가 기록에 쓴 표현을 최대한 그대로 살려.
-- 모든 항목은 짧은 개조식으로 쓰고, 끝은 '~함', '~했음', '~였음'처럼 짧게 맺어.
+${RULES}
 - 자소서에 쓸 만한 경험만 골라. 어려움을 해결한 일, 다른 사람과 함께 한 일, 직접 생각해서 제안하거나 기획한 일, 스스로 먼저 나서서 한 일, 배우거나 생각이 달라진 일, 결과가 있었던 일. 출퇴근이나 단순 반복 업무는 빼.
 - 사용자가 '중점적으로 정리하고 싶은 점'을 적었으면 그 방향을 먼저 고려해.
-- 기록에 없어서 채울 수 없는 칸은 지어내지 말고 '기록 없음'이라고 써.
 - 소재가 적으면 적은 대로 써. 억지로 개수를 채우지 마.
-- 마크다운 기호(#, **, 표)는 쓰지 말고 아래 형식 그대로 써.
 
-형식
+형식 (첫 줄은 반드시 '🏷️ 제목:'으로 시작)
+🏷️ 제목: (이번 주에 한 업무를 키워드 3~5개로, ' · '로 구분. 예: 청년정책 게시판 배치안 · 대관 예약 시트 제작 · 홍보물 검수)
+
 📌 이번 주 한 줄 요약
 - (이번 주에 한 일을 한 줄로)
 
@@ -722,43 +781,135 @@ const SYS=`너는 사용자가 나중에 자기소개서 소재를 찾아볼 수
 
 🌱 다음 주에 기록해 두면 좋을 것
 - (소재를 더 쓸모 있게 만들 기록 팁 1~2개, 짧게)`;
+const splitTitle=o=>{const m=o.match(/^\s*🏷️?\s*제목\s*[:：]\s*(.+)$/m);return m?{title:m[1].trim(),text:o.replace(m[0],'').trim()}:{title:'',text:o}};
 const build=()=>{const{e,es,dn,tm}=wkData(w0),f=$('#rvf').value.trim();
   const L=[`[기간] ${w0} (월) ~ ${e} (일)`,`[중점적으로 정리하고 싶은 점] ${f||'(없음: 자소서 소재로 쓸모 있는 경험 위주로)'}`,'','[업무 기록]'];
-  es.forEach(x=>{L.push(`■ ${md(x.date)} (${dw(x.date)}) ${x.title||'(제목 없음)'}${x.cat?` [${x.cat}${x.start?` ${x.start}~${x.end}`:''}]`:''}`);
-    if((x.body||'').trim())L.push('내용: '+x.body.trim());if((x.diff||'').trim())L.push('어려웠던 점: '+x.diff.trim());if(FE(x).trim())L.push('느낀 점: '+FE(x).trim());if((x.retro||'').trim())L.push('회고: '+x.retro.trim());
-    if(x.files&&x.files.length)L.push('첨부: '+x.files.map(a=>a.name).join(', '))});
+  es.forEach(x=>L.push(entryText(x,true)));
   if(dn.length){L.push('','[이 주에 완료한 업무]');dn.forEach(t=>L.push(`- ${md(t.date)} ${t.text}${t.top?` (상위 업무: ${t.top})`:''}`))}
   const tl=Object.entries(tm).map(([c,n])=>`${c} ${hm(n)}`).join(', ');if(tl)L.push('','[시간 기록 합계] '+tl);
   return{text:L.join('\n'),n:es.length+dn.length}};
-const why=(st,msg,m)=>{msg=msg||'';
-  if(/API key|API_KEY|PERMISSION_DENIED/i.test(msg)||st===403)return'API 키가 올바르지 않아요. ⚙️ AI 설정에서 키를 다시 확인해 주세요';
-  if(st===429)return/pro/i.test(m)?'이 모델은 무료 키로 쓸 수 없거나 오늘 무료 한도를 넘었어요. Flash 모델로 바꿔 보세요':'무료 사용 한도를 넘었어요. 잠시 뒤 다시 하거나 다른 모델을 골라 보세요';
-  if(st===404)return'이 모델은 이제 쓸 수 없어요. 모델 목록을 새로 불러왔으니 모델 칸에서 다시 골라 주세요';
-  if(st===503||st===500)return'구글 서버가 바빠요. 잠시 뒤 다시 눌러 주세요';
-  return msg||('오류 '+st)};
-$('#rvgo').onclick=async()=>{if(busy)return;const key=ls('gkey');
-  if(!key){toast('먼저 Gemini API 키를 넣어 주세요');$('#rvset').click();return}
-  const{text,n}=build();if(!n)return toast('이 주에는 정리할 업무 기록이 없어요');
-  const m=$('#rvm').value||cur(),wk=w0,f=$('#rvf').value,b=$('#rvgo');busy=true;b.disabled=true;b.textContent='✍️ 작성 중… (10~60초)';
-  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),180000);
-  try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json','x-goog-api-key':key},
-      body:JSON.stringify({systemInstruction:{parts:[{text:SYS}]},contents:[{role:'user',parts:[{text}]}]})});
-    const j=await r.json().catch(()=>({}));
-    if(!r.ok){if(r.status===404){try{await fetchModels(key)}catch(e){}}throw new Error(why(r.status,j.error&&j.error.message,m))}
-    const c=(j.candidates||[])[0],out=((c&&c.content&&c.content.parts)||[]).filter(p=>p.text&&!p.thought).map(p=>p.text).join('').replace(/\*\*/g,'').replace(/^#{1,6}\s*/gm,'').trim();
-    if(!out)throw new Error(c&&c.finishReason==='SAFETY'?'AI가 답변을 거절했어요. 내용을 조금 바꿔 다시 해 주세요':'AI가 빈 답변을 보냈어요. 다시 눌러 주세요');
-    const rec={id:crypto.randomUUID(),week:wk,focus:f,text:out,model:m,created:Date.now(),updated:Date.now()};
-    await putRv(rec);fold.delete(wk);rq='';$('#rvq').value='';rRv();flash(rec.id);toast('회고를 작성했어요 ✨')}
-  catch(e){toast(e.name==='AbortError'?'시간이 너무 오래 걸려서 멈췄어요. 다시 눌러 주세요':e.message,true)}
-  finally{clearTimeout(to);busy=false;b.disabled=false;b.textContent='✨ AI로 회고 작성'}};
+$('#rvgo').onclick=e=>busyBtn(e.target,'✍️ 작성 중… (10~60초)',async()=>{const{text,n}=build();if(!n)throw new Error('이 주에는 정리할 업무 기록이 없어요');
+  const wk=w0,f=$('#rvf').value,{out,m}=await gem(SYS,text),{title,text:body}=splitTitle(clean(out));
+  const rec={id:crypto.randomUUID(),week:wk,title,focus:f,text:body,model:m,created:Date.now(),updated:Date.now()};
+  await putRv(rec);fold.delete(wk);rq='';$('#rvq').value='';rRv();flash('rv-',rec.id);toast('회고를 작성했어요 ✨')});
+
+/* ---------- 회고 → 소재 넘기기 ---------- */
+let MT=[],pick=null;
+const ms=(m,f)=>st2('materials',m,f);
+const loadMt=async()=>{try{MT=(await ms('readonly',s=>s.getAll()))||[]}catch(e){MT=[]}};
+const putMt=async r=>{await ms('readwrite',s=>s.put(r));MT=MT.filter(x=>x.id!==r.id);MT.push(r)};
+const parseRetro=r=>{const t=r.text||'',a=t.search(/^✨.*$/m);let sec=a<0?'':t.slice(a).replace(/^✨.*\n?/,'');const b=sec.search(/^🌱/m);if(b>=0)sec=sec.slice(0,b);
+  const parts=sec.split(/^(?=\s*\d+\.\s)/m).map(s=>s.trim()).filter(s=>/^\d+\.\s/.test(s));
+  return parts.map(p=>{const[h,...rest]=p.split('\n');return{title:h.replace(/^\d+\.\s*/,'').replace(/^소재 이름\s*[:：]\s*/,'').trim(),text:rest.join('\n').trim()}})};
+const openPick=r=>{let it=parseRetro(r);if(!it.length)it=[{title:r.title||wl(wkOf(r))+' 회고',text:r.text}];
+  pick={r,it};$('#mpkt').textContent='📦 소재로 넘기기 · '+wl(wkOf(r));
+  $('#mpkl').innerHTML=it.map((x,i)=>{const dup=MT.some(m=>m.rid===r.id&&m.title===x.title);return`<label class="mc"><input type="checkbox" data-pi="${i}"${dup?'':' checked'}><span><b>${esc(x.title)}</b>${dup?' <span class="tg s0">이미 넣음</span>':''}<span class="mu mc2">${esc(x.text.split('\n').slice(0,3).join(' / '))}</span></span></label>`}).join('');
+  $('#mpk').showModal()};
+$('#mpkx').onclick=()=>$('#mpk').close();
+$('#mpko').onclick=async()=>{if(!pick)return;const sel=[...document.querySelectorAll('#mpkl [data-pi]:checked')].map(c=>pick.it[+c.dataset.pi]);if(!sel.length)return toast('넣을 항목을 골라 주세요');
+  try{for(const x of sel)await putMt({id:crypto.randomUUID(),title:x.title,text:x.text+`\n\n📅 출처: 주간 회고 (${wl(wkOf(pick.r))})`,src:'retro',rid:pick.r.id,week:wkOf(pick.r),created:Date.now(),updated:Date.now()});
+    $('#mpk').close();rMt();toast(`소재 ${sel.length}개를 소재함에 넣었어요 · ⑦ 소재함에서 볼 수 있어요`,true)}catch(e){toast('저장에 실패했어요')}};
+
+/* ---------- ⑦ 소재함 ---------- */
+let mq='',cand=null;
+const SRC={retro:'📦 주간 회고에서',search:'🔍 업무 기록에서 정리',manual:'✏️ 직접 작성'};
+function rMt(){const q=mq.toLowerCase(),L=MT.filter(m=>!q||((m.title||'')+' '+(m.text||'')).toLowerCase().includes(q)).sort((a,b)=>(b.created||0)-(a.created||0));
+  $('#mcnt').textContent=MT.length?`소재 ${L.length}개${q?` (전체 ${MT.length}개)`:''}`:'';
+  $('#mlist').innerHTML=L.map(m=>{const refs=(m.refs||[]).map(id=>all.find(e=>e.id===id)).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+    return`<article id="mt-${m.id}"><div class="top"><h3>${hl(m.title||'(제목 없음)',mq)}</h3><span style="white-space:nowrap"><button data-mc="${m.id}">복사</button> <button data-me="${m.id}">수정</button> <button data-mx="${m.id}">삭제</button></span></div>
+    <div class="mu">${SRC[m.src]||''} · ${dt(m.created||m.updated)}${m.model?` · ${esc(m.model)}`:''}</div><p>${hl(m.text||'',mq)}</p>${refs.length?`<div class="mrefs"><span class="mu">📎 근거 기록 (누르면 이동)</span>${refs.map(e=>`<button class="chip" data-gl="${e.id}">${md(e.date)} ${esc(e.title||'(제목 없음)')}</button>`).join('')}</div>`:''}</article>`}).join('')
+   ||`<div class="empty">${MT.length?'검색어와 맞는 소재가 없어요.':'아직 소재가 없어요.<br>위에서 업무 이름으로 찾아 정리하거나, ⑥ 주간 회고에서 ‘📦 소재로’를 눌러 넣어 보세요.'}</div>`}
+window.rMt=rMt;
+$('#mtq').oninput=e=>{mq=e.target.value.trim();rMt()};
+$('#mlist').onclick=async ev=>{const t=ev.target.closest('[data-mc],[data-me],[data-mx],[data-gl]');if(!t)return;const d=t.dataset;
+  if(d.gl)return window.goLog&&window.goLog(d.gl);
+  const m=MT.find(x=>x.id===(d.mc||d.me||d.mx));if(!m)return;
+  if(d.mc)return copy(m.title+'\n'+m.text);
+  if(d.me)return openM(m);
+  if(d.mx){try{await ms('readwrite',s=>s.delete(m.id));MT=MT.filter(x=>x.id!==m.id);UNDO.push({m});rMt();toast('삭제했어요 · Ctrl+Z로 되돌릴 수 있어요')}catch(e){toast('삭제에 실패했어요')}}};
+window.mRestore=async m=>{await putMt(m);if(!$('#p7').hidden){rMt();flash('mt-',m.id)}};
+let meid=null;
+const openM=m=>{meid=m?m.id:null;$('#mdet').textContent=m?'소재 수정':'소재 직접 작성';$('#mdtl').value=m?m.title||'':'';$('#mdtx').value=m?m.text||'':'';$('#mde').showModal()};
+$('#mnew').onclick=()=>openM(null);$('#mdec').onclick=()=>$('#mde').close();
+$('#mdes').onclick=async()=>{const title=$('#mdtl').value.trim(),text=$('#mdtx').value;if(!title)return toast('소재 제목을 적어 주세요');
+  const o=meid&&MT.find(x=>x.id===meid),m={...(o||{id:crypto.randomUUID(),src:'manual',created:Date.now()}),title,text,updated:Date.now()};
+  try{await putMt(m);$('#mde').close();rMt();flash('mt-',m.id);toast('저장했어요')}catch(e){toast('저장에 실패했어요')}};
+
+/* 업무 이름으로 관련 기록 찾기 */
+const GEN=new Set(['제작','작성','만들기','만듦','준비','진행','업무','정리','관리','회의','관련','작업','기획','보고','검토','수정','하기','및']);
+const norm=s=>(s||'').toLowerCase().replace(/\s+/g,'');
+const toks=q=>[...new Set(q.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').split(/\s+/).map(w=>w.replace(/(을|를|이|가|은|는|의|에|에서|으로|로|과|와)$/,'')).filter(w=>w.length>=2))];
+const kscore=(e,T)=>{const h=norm([e.title,e.body,e.diff,FE(e),e.retro,(e.files||[]).map(f=>f.name).join(' ')].join(' ')),ht=norm(e.title);let s=0,hit=0;
+  for(const t of T){if(h.includes(t)){const w=GEN.has(t)?.3:1;s+=w*(ht.includes(t)?2:1);if(!GEN.has(t))hit++}}return{s,hit}};
+const SYS_P=`너는 업무 기록 검색 도우미야. 사용자가 적은 업무와 관련된 기록의 번호를 골라.
+- 그 업무를 준비하거나, 진행하거나, 고치거나, 마무리한 기록, 그 업무 때문에 한 회의나 연락도 포함해.
+- 표현이 달라도 같은 일이면 포함해. (예: '공간 대관 시트 제작' ↔ '대관 예약 구글 시트 만들기', '예약자 확인 자동화')
+- 단어 하나만 겹치고 다른 일이면 빼.
+- 애매하면 포함해. 사용자가 마지막에 직접 확인해.
+- 기록 번호만 숫자 배열로 답해. 관련 기록이 없으면 빈 배열 [].`;
+const show=()=>{if(!cand)return($('#mcand').innerHTML='');const{list,q,ai}=cand,n=list.filter(c=>c.on).length;
+  $('#mcand').innerHTML=`<div class="mcbox"><div class="mu" style="margin-bottom:6px">‘${esc(q)}’ 관련 기록 ${list.length}건을 찾았어요${ai?'':' (AI 없이 단어로만 찾았어요)'}. <b>✔ 표시된 기록만</b> 정리에 쓰여요. 관련 없는 건 체크를 빼고, 빠진 기록은 아래에서 찾아 체크하세요.</div>
+  ${list.map(c=>`<label class="mc"><input type="checkbox" data-ci="${c.e.id}"${c.on?' checked':''}><span><b>${md(c.e.date)} (${dw(c.e.date)}) ${esc(c.e.title||'(제목 없음)')}</b> ${c.ai?'<span class="tg s2">🤖 AI 추천</span>':''}${c.hit?'<span class="tg s4">🔤 단어 일치</span>':''}<span class="mu mc2">${esc([c.e.body,c.e.diff,FE(c.e)].filter(Boolean).join(' / ').slice(0,120))}</span></span></label>`).join('')||'<div class="mu">관련 기록을 찾지 못했어요. 아래에서 직접 찾아 체크해 보세요.</div>'}
+  <input id="mxs" type="search" placeholder="➕ 목록에 없는 기록 찾기 (단어 입력)" style="margin-top:8px"><div id="mxl"></div>
+  <div class="row" style="margin-top:10px"><button id="mcx">닫기</button><button class="pri" id="mgo" style="flex:1"${n?'':' disabled'}>✨ 선택한 기록 ${n}건으로 소재 정리</button></div></div>`;
+  $('#mxs').oninput=e=>{const v=norm(e.target.value),ids=new Set(cand.list.map(c=>c.e.id));
+    $('#mxl').innerHTML=v.length<1?'':all.filter(x=>!ids.has(x.id)&&norm([x.title,x.body,x.diff,FE(x),x.retro].join(' ')).includes(v)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,20).map(x=>`<label class="mc"><input type="checkbox" data-xa="${x.id}"><span><b>${md(x.date)} (${dw(x.date)}) ${esc(x.title||'(제목 없음)')}</b><span class="mu mc2">${esc((x.body||'').slice(0,100))}</span></span></label>`).join('')||'<div class="mu">찾는 기록이 없어요.</div>'}};
+$('#mcand').onchange=ev=>{const c=ev.target.dataset;if(c.ci){const x=cand.list.find(k=>k.e.id===c.ci);if(x)x.on=ev.target.checked;updGo()}
+  if(c.xa&&ev.target.checked){const e=all.find(x=>x.id===c.xa);if(e){cand.list.push({e,on:true,ai:false,hit:0,add:1});cand.list.sort((a,b)=>a.e.date.localeCompare(b.e.date));const v=$('#mxs').value;show();$('#mxs').value=v;$('#mxs').dispatchEvent(new Event('input'))}}};
+const updGo=()=>{const n=cand.list.filter(c=>c.on).length,b=$('#mgo');b.disabled=!n;b.textContent=`✨ 선택한 기록 ${n}건으로 소재 정리`};
+$('#mcand').onclick=ev=>{if(ev.target.id==='mcx'){cand=null;show()}if(ev.target.id==='mgo')mkMat(ev.target)};
+$('#mfind').onclick=e=>busyBtn(e.target,'🔍 찾는 중…',async()=>{const q=$('#mq').value.trim();if(!q)throw new Error('업무 이름을 적어 주세요');if(!all.length)throw new Error('업무 기록이 아직 없어요');
+  const T=toks(q),ks=new Map();all.forEach(x=>{const r=kscore(x,T);if(r.hit)ks.set(x.id,r)});
+  const need=Math.max(1,Math.ceil(T.filter(t=>!GEN.has(t)).length/2));let ai=null;
+  if(ls('gkey')){const S=[...all].sort((a,b)=>a.date.localeCompare(b.date));
+    try{const{out}=await gem(SYS_P,`[찾는 업무] ${q}\n\n[업무 기록 목록]\n`+S.map((x,i)=>`[${i}] `+entryText(x,false)).join('\n'),{type:'ARRAY',items:{type:'INTEGER'}});
+      let arr;try{arr=JSON.parse(out)}catch(_){arr=(out.match(/\d+/g)||[]).map(Number)}ai=new Set((Array.isArray(arr)?arr:[]).map(i=>S[i]&&S[i].id).filter(Boolean))}
+    catch(err){toast('AI 검색 실패 → 단어로만 찾았어요: '+err.message,true)}}
+  const ids=new Set([...ks.keys(),...(ai||[])]);
+  const list=[...ids].map(id=>{const e=all.find(x=>x.id===id),k=ks.get(id),isAi=!!(ai&&ai.has(id));return{e,ai:isAi,hit:k?k.hit:0,on:isAi||(k&&k.hit>=need)}}).filter(c=>c.e).sort((a,b)=>a.e.date.localeCompare(b.e.date));
+  cand={q,list,ai:!!ai};show();$('#mcand').scrollIntoView({block:'nearest',behavior:'smooth'})});
+const SYS_M=`너는 사용자가 나중에 자기소개서 소재로 꺼내 쓸 수 있도록, 한 가지 업무에 대한 업무 기록들을 모아 소재로 정리해 주는 역할이야. 글을 자소서처럼 다듬지 말고 재료만 담백하게 정돈해.
+
+규칙
+${RULES}
+- 주어진 기록 중 사용자가 적은 업무와 관련된 내용만 써. 관련 없는 내용은 빼.
+- '내가 한 일', '결과', '어려웠던 점'의 각 줄 끝에는 근거가 된 기록 날짜를 (11/20)처럼 꼭 붙여. 날짜를 붙일 수 없는 내용은 쓰지 마.
+- 일이 진행된 순서대로 써.
+- 사용자가 '중점적으로 정리하고 싶은 점'을 적었으면 그 방향을 먼저 고려해.
+- 주어진 기록이 그 업무와 전혀 관련 없으면 '관련 기록 없음' 한 줄만 써.
+
+형식
+📌 한 줄 요약
+- (이 업무가 무엇이었는지 한 줄로)
+
+📅 기간: (첫 기록 날짜 ~ 마지막 기록 날짜)
+- 상황: (왜 이 일을 하게 됐는지)
+- 내가 한 일:
+  · (한 일 1) (날짜)
+  · (한 일 2) (날짜)
+- 결과: (날짜)
+- 어려웠던 점: (날짜)
+- 배운 점·드러나는 역량: (쉬운 말로 2~3개)
+- 쓸 수 있는 자소서 문항: (예: 협업 경험, 어려움을 극복한 경험, 직무 관련 경험)
+
+📝 기록에 없어서 채우면 좋을 것
+- (이 소재를 더 쓸모 있게 만들려면 사용자가 떠올려 적어 두면 좋을 것 1~3개. 예: 결과 숫자, 받은 의견. 질문 형태로)`;
+const mkMat=b=>busyBtn(b,'✍️ 정리 중… (10~60초)',async()=>{const sel=cand.list.filter(c=>c.on).map(c=>c.e).sort((a,b)=>a.date.localeCompare(b.date));if(!sel.length)throw new Error('기록을 하나 이상 골라 주세요');
+  const f=$('#mf').value.trim(),q=cand.q;
+  const{out,m}=await gem(SYS_M,`[소재로 정리할 업무] ${q}\n[중점적으로 정리하고 싶은 점] ${f||'(없음)'}\n\n[관련 업무 기록 ${sel.length}건]\n`+sel.map(x=>entryText(x,true)).join('\n\n'));
+  const text=clean(out);if(/^관련 기록 없음/.test(text))throw new Error('고른 기록에서 이 업무와 관련된 내용을 찾지 못했다고 해요. 기록을 다시 골라 주세요');
+  const mt={id:crypto.randomUUID(),title:q,text,src:'search',refs:sel.map(x=>x.id),focus:f,model:m,created:Date.now(),updated:Date.now()};
+  await putMt(mt);cand=null;show();$('#mq').value='';mq='';$('#mtq').value='';rMt();flash('mt-',mt.id);toast('소재를 정리했어요 ✨')});
+$('#mq').onkeydown=e=>{if(e.key==='Enter')$('#mfind').click()};
+
 fillM();
-const _lx=window.loadX;window.loadX=async()=>{await _lx();await loadRv();if(!$('#p6').hidden)rRv()};
+const _lx=window.loadX;window.loadX=async()=>{await _lx();await loadRv();await loadMt();if(!$('#p6').hidden)rRv();if(!$('#p7').hidden)rMt()};
 })();
 </script>
 <script>
 (()=>{
 const g=k=>{try{return localStorage.getItem('wm_'+k)||''}catch(e){return''}},s=(k,v)=>{try{localStorage.setItem('wm_'+k,v)}catch(e){}};
-const SC='https://www.googleapis.com/auth/drive.appdata',API='https://www.googleapis.com',DN='wm-data.json',AV=3,CH=4*1024*1024,STO=['entries','tracker','todos','retros'];
+const SC='https://www.googleapis.com/auth/drive.appdata',API='https://www.googleapis.com',DN='wm-data.json',AV=4,CH=4*1024*1024,STO=['entries','tracker','todos','retros','materials'];
 let TKN='',EXP=0,busy=false,mute=false,need=false,timer=0,lastTry=0;
 const dbx=(n,m,f)=>new Promise((res,rej)=>{const t=db.transaction(n,m),o=f(t.objectStore(n));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)});
 const rows=n=>dbx(n,'readonly',x=>x.getAll()).then(r=>r||[]);
@@ -781,7 +932,7 @@ const push=async fl=>{const d0=g('dirty'),es=await rows('entries'),have=new Set(
   for(const e of es){let ch=false;for(const f of e.files)if(!f.aid){f.aid=crypto.randomUUID();ch=true}
     if(ch){mute=true;try{await dbx('entries','readwrite',x=>x.put(e))}finally{mute=false}}}
   for(const e of es)for(const f of e.files){if(!f.blob)continue;const np=Math.max(1,Math.ceil(f.blob.size/CH));for(let k=0;k<np;k++){const n=np>1?`att_${f.aid}.${k}`:'att_'+f.aid;if(!have.has(n)){await up(n,f.blob.slice(k*CH,(k+1)*CH,f.blob.type));have.add(n)}}}
-  const snap={v:1,at:Date.now(),entries:es.map(e=>({...e,files:e.files.map(f=>({name:f.name,type:f.type,size:f.size,aid:f.aid,n:Math.max(1,Math.ceil((f.blob?f.blob.size:f.size||0)/CH))}))})),tracker:await rows('tracker'),todos:await rows('todos'),retros:await rows('retros')};
+  const snap={v:1,at:Date.now(),entries:es.map(e=>({...e,files:e.files.map(f=>({name:f.name,type:f.type,size:f.size,aid:f.aid,n:Math.max(1,Math.ceil((f.blob?f.blob.size:f.size||0)/CH))}))})),tracker:await rows('tracker'),todos:await rows('todos'),retros:await rows('retros'),materials:await rows('materials')};
   const ex=fl.find(f=>f.name===DN),r=await up(DN,new Blob([JSON.stringify(snap)],{type:'application/json'}),ex&&ex.id,{av:String(AV)});
   s('last',r.modifiedTime);if(g('dirty')===d0)s('dirty','')};
 const pull=async(fl,meta)=>{const snap=await(await df(`${API}/drive/v3/files/${meta.id}?alt=media`)).json();
